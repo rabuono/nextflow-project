@@ -14,7 +14,7 @@ With inspirations from:
 
 
 // Set default input parameters (these can be altered by calling their flag on the command line, e.g., nextflow run main.nf --reads 'mydata/*_R{1,2}.fastq')
-params.reads = "${launchDir}/data/*_R{1,2}.fastq*" 
+params.reads = "${launchDir}/data/*_R{1,2}.fastq.gz" 
 params.outdir = "${launchDir}/output"
 
 
@@ -41,11 +41,12 @@ workflow {
     Processes to compare:
     raw_falco - Running FALCO in raw samples
     raw_fastqc - Running FASTQC in raw samples
-    fastp_falco - 
-    fastp_fastqc - 
+    fastp_falco - Running FALCO in fastp processed samples
+    fastp_fastqc - Running FASTQC in fastp processed samples
     """
     
-    // Create a channel for input reads and check if there are input files. User is informed that no files were found and that example files will be downloaded.
+    // Create a channel for input reads and check if there are input files.
+    // User is informed if no files were found and that example files will be downloaded.
 def readsDir = file(params.reads)
 if (readsDir.isEmpty()) {
     log.warn "No input files found at ${params.reads}"
@@ -67,13 +68,6 @@ if (readsDir.isEmpty()) {
     // Remove comment to show resulting read_pairs channel
     //read_pairs_ch.view()
 
-    
-    /*
-    // Make channel to read pairs with .fastq at the end
-    read_pairs_ch_fastq = Channel.empty()
-    read_pairs_ch_fastq = read_pairs_ch.filter { sample_id, files -> files.every { it.name.endsWith(".fastq") } }
-    */
-
     // Run QC tools
 	raw_fastqc(read_pairs_ch)
     raw_falco(read_pairs_ch)
@@ -89,7 +83,7 @@ if (readsDir.isEmpty()) {
     //.view()
 
 
-    // Renames FALCO output and add to folder with sample name
+    // Rename FALCO output and add to folder with sample name, as MultiQC expects a different file organization as the one in the FALCO output
     newnamefalco (ch_raw_falco_rename)
 
     // Create separate channels for FASTQC and FALCO outputs
@@ -98,8 +92,10 @@ if (readsDir.isEmpty()) {
   
     // Populate channels
     ch_fastqc_multiqc = ch_fastqc_multiqc.mix(raw_fastqc.out.zip.map { it[1] }.collect())
+    // Remove comment to view
     //ch_fastqc_multiqc.view()
     ch_falco_multiqc = ch_falco_multiqc.mix(newnamefalco.out)
+    //Remove comment to view
     //ch_falco_multiqc.view()
 
     // Run MultiQC separately for FASTQC and FALCO
@@ -116,7 +112,7 @@ if (readsDir.isEmpty()) {
     // Populate FASTP channel
     ch_fastp = ch_fastp.mix(FASTP.out.reads.map { sample_id, files -> [ sample_id, files ] })
     
-    // Remove comment to view ch_fastp channel
+    // Remove comment to view
     //ch_fastp.view()
 
     // Run QC tools on processed data
