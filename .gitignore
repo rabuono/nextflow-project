@@ -1,0 +1,9 @@
+# Ignoring folders and outputs not needed in GitHub
+.nextflow/
+data/
+output/
+work/
+.nextflow.log
+.nf-core.yml
+report-*.html
+trace-*.txt
