@@ -3,7 +3,7 @@
 data/
 output/
 work/
-.nextflow.log
+.nextflow.log*
 .nf-core.yml
 report-*.html
 trace-*.txt
