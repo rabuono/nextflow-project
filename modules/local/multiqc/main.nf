@@ -1,5 +1,4 @@
 process MULTIQC {
-    publishDir "${params.outdir}/multiqc", mode: 'copy'
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/multiqc:1.28--pyhdfd78af_0' :
         'biocontainers/multiqc:1.28--pyhdfd78af_0' }"

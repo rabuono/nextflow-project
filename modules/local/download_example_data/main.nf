@@ -1,7 +1,6 @@
 //Will download the example data below. Used when users do not provide data.
 
 process DOWNLOAD_EXAMPLE_DATA {
-    //publishDir "${params.outdir}", mode: 'copy'
 
    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/wget:1.21.4' :
