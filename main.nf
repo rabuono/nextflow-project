@@ -25,9 +25,9 @@ include { FALCO as raw_falco ; FALCO as fastp_falco } from './modules/nf-core/fa
 include { FASTP } from './modules/nf-core/fastp/main'
 
 // Adding local modules
-include { MULTIQC as multiqc_fastqc ; MULTIQC as multiqc_falco} from './modules/local/multiqc/main'
+include { MULTIQC as raw_multiqc_fastqc ; MULTIQC as raw_multiqc_falco ; MULTIQC as fastp_multiqc_fastqc ; MULTIQC as fastp_multiqc_falco} from './modules/local/multiqc/main'
 include { DOWNLOAD_EXAMPLE_DATA } from './modules/local/download_example_data/main'
-include { newnamefalco } from './modules/local/newnamefalco/main'
+include { newnamefalco as raw_newnamefalco ; newnamefalco as fastp_newnamefalco  } from './modules/local/newnamefalco/main'
 
 
 workflow {
@@ -84,7 +84,7 @@ if (readsDir.isEmpty()) {
 
 
     // Rename FALCO output and add to folder with sample name, as MultiQC expects a different file organization as the one in the FALCO output
-    newnamefalco (ch_raw_falco_rename)
+    raw_newnamefalco (ch_raw_falco_rename)
 
     // Create separate channels for FASTQC and FALCO outputs
     ch_fastqc_multiqc = Channel.empty()
@@ -94,14 +94,14 @@ if (readsDir.isEmpty()) {
     ch_fastqc_multiqc = ch_fastqc_multiqc.mix(raw_fastqc.out.zip.map { it[1] }.collect())
     // Remove comment to view
     //ch_fastqc_multiqc.view()
-    ch_falco_multiqc = ch_falco_multiqc.mix(newnamefalco.out)
+    ch_falco_multiqc = ch_falco_multiqc.mix(raw_newnamefalco.out)
     //Remove comment to view
     //ch_falco_multiqc.view()
 
     // Run MultiQC separately for FASTQC and FALCO
-    multiqc_fastqc(ch_fastqc_multiqc.collect())
-    multiqc_falco(ch_falco_multiqc.collect())
-    
+    raw_multiqc_fastqc(ch_fastqc_multiqc.collect())
+    raw_multiqc_falco(ch_falco_multiqc.collect())
+
     // Run fastp in the raw data
     // FASTP resulting reads files are saved in output for convenience
     FASTP(read_pairs_ch, [], false, false, false)
@@ -115,15 +115,41 @@ if (readsDir.isEmpty()) {
     // Remove comment to view
     //ch_fastp.view()
 
+    /*
+    Repeating FALCO and FASTQC after FASTP processing
+    */
+
     // Run QC tools on processed data
 	fastp_fastqc(ch_fastp)
     fastp_falco(ch_fastp)
-/*
-    // Create a channel for FASTP output
-    //ch_fastp = FASTP.out
-    //ch_fastp.view()
 
+    // Create channel for FALCO file reorganization after FASTP
+    ch_fastp_falco_rename = fastp_falco.out.txt
+    .map { sample_id, txt -> txt.parent }
+    .collect()
+    .map { it -> it.unique() }
+    .flatMap { paths -> tuple(paths) }
+    // Remove comment to view
+    //.view()
+
+    // Rename FALCO output after FASTP and add to folder with sample name, as MultiQC expects a different file organization as the one in the FALCO output
+    fastp_newnamefalco (ch_fastp_falco_rename)
+
+    // Create separate channels for FASTQC and FALCO outputs
+    ch_fastp_fastqc_multiqc = Channel.empty()
+    ch_fastp_falco_multiqc = Channel.empty()
   
-*/
+    // Populate channels
+    ch_fastp_fastqc_multiqc = ch_fastp_fastqc_multiqc.mix(fastp_fastqc.out.zip.map { it[1] }.collect())
+    // Remove comment to view
+    //ch_fastp_fastqc_multiqc.view()
+    ch_fastp_falco_multiqc = ch_fastp_falco_multiqc.mix(fastp_newnamefalco.out)
+    //Remove comment to view
+    //ch_fastp_falco_multiqc.view()
+
+    // Run MultiQC separately for FASTQC and FALCO
+    fastp_multiqc_fastqc(ch_fastp_fastqc_multiqc.collect())
+    fastp_multiqc_falco(ch_fastp_falco_multiqc.collect())
+
 }
 
