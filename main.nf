@@ -148,8 +148,8 @@ if (readsDir.isEmpty()) {
     //ch_fastp_falco_multiqc.view()
 
     // Run MultiQC separately for FASTQC and FALCO
-    fastp_multiqc_fastqc(ch_fastqc_multiqc.collect())
-    fastp_multiqc_falco(ch_falco_multiqc.collect())
+    fastp_multiqc_fastqc(ch_fastp_fastqc_multiqc.collect())
+    fastp_multiqc_falco(ch_fastp_falco_multiqc.collect())
 
 }
 
