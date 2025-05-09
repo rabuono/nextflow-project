@@ -3,11 +3,18 @@
 process DOWNLOAD_EXAMPLE_DATA {
     //publishDir "${params.outdir}", mode: 'copy'
 
+   container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/wget:1.21.4' :
+        'quay.io/biocontainers/wget:1.21.4' }"
     output:
     path "example_data/*", emit: exampledata
 
     script:
     """
+    # Update package lists and install wget
+    apt-get update && apt-get install -y wget
+    
+    # Download example data
     exampledatalink=ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR201
 
     LIST="ERR2015047/SC01_R1.fastq.gz
