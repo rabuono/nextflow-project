@@ -18,19 +18,5 @@ process MULTIQC {
     """
     multiqc .
     """
-   // to check for falco output
-    /*"""
-    echo "Checking for Falco output..."
-    if ls *falco* 1> /dev/null 2>&1; then
-        echo "Falco output found:"
-        ls -l *falco*
-    else
-        echo "No Falco output found in the current directory."
-        echo "Contents of the current directory:"
-        ls -l
-    fi
 
-    echo "Running MultiQC..."
-    multiqc . -v
-    """*/
 }
