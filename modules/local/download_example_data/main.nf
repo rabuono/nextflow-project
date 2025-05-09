@@ -11,8 +11,6 @@ process DOWNLOAD_EXAMPLE_DATA {
 
     script:
     """
-    # Update package lists and install wget
-    apt-get update && apt-get install -y wget
     
     # Download example data
     exampledatalink=ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR201
