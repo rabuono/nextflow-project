@@ -21,5 +21,9 @@ The pipeline outputs to the 'output/' folder that is created in the directory fr
 - fastqc_multiqc: MultiQC results for the samples analysed with FastQC.  Provided for convenient comparison of results.  
 - FASTP: modified `fastq.gz` files resulting from using fastp.
 
+The `nextflow.config` defines that nextflow an [excution report](https://www.nextflow.io/docs/latest/reports.html#execution-report) and [trace](https://www.nextflow.io/docs/latest/reports.html#trace-file) files are generated with each run and saved in the directory from which the pipeline was launched from. These are used to compare computational resource usage by FastQC and Falco.  
+
 ## Using
-It is made to run at the [HPC Ugent](https://www.ugent.be/hpc/en), and uses Singularity as the default profile
+It is made to run at the [HPC Ugent](https://www.ugent.be/hpc/en), and the default profile uses Singularity.  
+To run the pipeline, run the following command in the folder where the pipeline and its components are:
+`nextflow run main.nf`
